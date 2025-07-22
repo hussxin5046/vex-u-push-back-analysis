@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # React Frontend
+  frontend:
+    build:
+      context: ./apps/frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_ENV=development
+    volumes:
+      - ./apps/frontend/src:/app/src
+      - ./apps/frontend/public:/app/public
+      - /app/node_modules
+    depends_on:
+      - backend
+    stdin_open: true
+    tty: true
+
+  # Flask Backend API
+  backend:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8000:8000"
+    environment:
+      - FLASK_APP=app
+      - FLASK_ENV=development
+      - FLASK_DEBUG=True
+      - VEX_ANALYSIS_PATH=/app/packages/vex-analysis
+      - PYTHONPATH=/app/packages/vex-analysis
+    volumes:
+      - ./apps/backend:/app
+      - ./packages/vex-analysis:/app/packages/vex-analysis
+      - ./shared:/app/shared
+    depends_on:
+      - analysis
+    restart: unless-stopped
+
+  # VEX Analysis Engine
+  analysis:
+    build:
+      context: ./packages/vex-analysis
+      dockerfile: Dockerfile
+    volumes:
+      - ./packages/vex-analysis:/app
+      - analysis_data:/app/data
+      - analysis_models:/app/models
+      - analysis_reports:/app/reports
+    environment:
+      - PYTHONPATH=/app
+    profiles:
+      - analysis
+
+  # Development database (optional)
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=vex_analysis
+      - POSTGRES_USER=vex_user
+      - POSTGRES_PASSWORD=vex_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    profiles:
+      - database
+
+volumes:
+  postgres_data:
+  analysis_data:
+  analysis_models:
+  analysis_reports:
+  node_modules:
+
+networks:
+  default:
+    name: vex-analysis-network

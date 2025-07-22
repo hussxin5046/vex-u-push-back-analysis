@@ -1,0 +1,47 @@
+{
+  "name": "vex-u-analysis-platform",
+  "version": "1.0.0",
+  "description": "Full-stack VEX U strategic analysis platform",
+  "private": true,
+  "workspaces": [
+    "apps/frontend"
+  ],
+  "scripts": {
+    "setup": "./scripts/setup.sh",
+    "dev": "./scripts/start-dev.sh",
+    "frontend:dev": "cd apps/frontend && npm start",
+    "frontend:build": "cd apps/frontend && npm run build",
+    "frontend:test": "cd apps/frontend && npm test",
+    "backend:dev": "cd apps/backend && source venv/bin/activate && python app.py",
+    "backend:test": "cd apps/backend && source venv/bin/activate && python -m pytest",
+    "analysis:demo": "cd packages/vex-analysis && source venv/bin/activate && python vex_analysis/main.py demo",
+    "analysis:test": "cd packages/vex-analysis && source venv/bin/activate && python vex_analysis/main.py test",
+    "test:all": "npm run frontend:test && npm run backend:test && npm run analysis:test",
+    "docker:up": "docker-compose up",
+    "docker:down": "docker-compose down",
+    "docker:build": "docker-compose build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hussxin5046/vex-u-push-back-analysis.git"
+  },
+  "keywords": [
+    "vex",
+    "robotics",
+    "strategy",
+    "analysis",
+    "simulation",
+    "react",
+    "flask",
+    "python"
+  ],
+  "author": "VEX U Analysis Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "python": ">=3.8.0"
+  }
+}
