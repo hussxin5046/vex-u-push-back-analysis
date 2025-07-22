@@ -101,3 +101,16 @@ class HealthStatus(BaseModel):
         json_encoders = {
             datetime: lambda v: v.isoformat()
         }
+
+class ApiResponse(BaseModel):
+    """Simple API response model for legacy compatibility"""
+    success: bool = Field(description="Whether the request was successful")
+    data: Optional[Any] = Field(None, description="Response data")
+    error: Optional[str] = Field(None, description="Error message if failed")
+    message: Optional[str] = Field(None, description="Human readable message")
+    
+    def dict(self, **kwargs):
+        """Override dict method to ensure compatibility"""
+        result = super().dict(**kwargs)
+        # Remove None values to keep response clean
+        return {k: v for k, v in result.items() if v is not None}

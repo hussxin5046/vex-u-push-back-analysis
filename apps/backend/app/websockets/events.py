@@ -32,7 +32,7 @@ def connect():
         emit('connected', {
             "client_id": client_id,
             "server_time": datetime.utcnow().isoformat(),
-            "message": "Connected to VEX U Analysis API WebSocket"
+            "message": "Connected to Push Back Strategy WebSocket"
         })
         
     except Exception as e:
@@ -99,16 +99,34 @@ def subscribe(data):
         })
         
         # Send initial data based on subscription type
-        if subscription_type == "analysis_progress":
+        if subscription_type == "push_back_analysis":
             emit('analysis_update', {
                 "status": "ready",
-                "message": "Ready to receive analysis updates",
+                "message": "Ready to receive Push Back analysis updates",
                 "timestamp": datetime.utcnow().isoformat()
             })
-        elif subscription_type == "ml_training":
-            emit('training_update', {
+        elif subscription_type == "strategy_optimization":
+            emit('optimization_update', {
                 "status": "monitoring",
-                "message": "Ready to receive training updates", 
+                "message": "Ready to receive strategy optimization updates",
+                "timestamp": datetime.utcnow().isoformat()
+            })
+        elif subscription_type == "monte_carlo_simulation":
+            emit('simulation_update', {
+                "status": "monitoring", 
+                "message": "Ready to receive Monte Carlo simulation updates",
+                "timestamp": datetime.utcnow().isoformat()
+            })
+        elif subscription_type == "field_state":
+            emit('field_update', {
+                "status": "monitoring",
+                "message": "Ready to receive field state updates",
+                "timestamp": datetime.utcnow().isoformat()
+            })
+        elif subscription_type == "match_scoring":
+            emit('score_update', {
+                "status": "monitoring",
+                "message": "Ready to receive scoring updates",
                 "timestamp": datetime.utcnow().isoformat()
             })
         elif subscription_type == "system_metrics":
@@ -291,3 +309,180 @@ def get_connection_stats():
     except Exception as e:
         logger.error(f"Failed to get connection stats: {str(e)}")
         return {"error": str(e)}
+
+# Push Back Specific WebSocket Functions
+
+def broadcast_push_back_analysis_progress(analysis_id, stage, progress, current_step=None, results=None):
+    """Broadcast Push Back analysis progress"""
+    try:
+        room_name = f"push_back_analysis_{analysis_id}"
+        
+        update_data = {
+            "analysis_id": analysis_id,
+            "stage": stage,  # "block_flow", "autonomous_decision", "goal_priority", etc.
+            "progress": progress,  # 0-100
+            "current_step": current_step,
+            "partial_results": results,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        socketio.emit('push_back_analysis_update', update_data, room=room_name)
+        logger.info(f"Broadcasted Push Back analysis progress for {analysis_id}: {stage} {progress}%")
+        
+    except Exception as e:
+        logger.error(f"Failed to broadcast Push Back analysis progress: {str(e)}")
+
+def broadcast_strategy_optimization_update(strategy_id, optimization_type, progress, current_values=None):
+    """Broadcast strategy optimization progress"""
+    try:
+        room_name = f"strategy_optimization_{strategy_id}"
+        
+        update_data = {
+            "strategy_id": strategy_id,
+            "optimization_type": optimization_type,  # "block_flow", "parking", "autonomous"
+            "progress": progress,
+            "current_values": current_values,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        socketio.emit('strategy_optimization_update', update_data, room=room_name)
+        logger.info(f"Broadcasted optimization update for {strategy_id}: {optimization_type} {progress}%")
+        
+    except Exception as e:
+        logger.error(f"Failed to broadcast optimization update: {str(e)}")
+
+def broadcast_monte_carlo_progress(simulation_id, completed_sims, total_sims, current_stats=None):
+    """Broadcast Monte Carlo simulation progress"""
+    try:
+        room_name = f"monte_carlo_simulation_{simulation_id}"
+        
+        progress = (completed_sims / total_sims) * 100 if total_sims > 0 else 0
+        
+        update_data = {
+            "simulation_id": simulation_id,
+            "completed_simulations": completed_sims,
+            "total_simulations": total_sims,
+            "progress": progress,
+            "current_stats": current_stats,  # Win rate, avg score, etc.
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        socketio.emit('monte_carlo_progress', update_data, room=room_name)
+        logger.info(f"Broadcasted Monte Carlo progress: {completed_sims}/{total_sims} ({progress:.1f}%)")
+        
+    except Exception as e:
+        logger.error(f"Failed to broadcast Monte Carlo progress: {str(e)}")
+
+def broadcast_field_state_update(match_id, field_state, scores=None):
+    """Broadcast Push Back field state updates"""
+    try:
+        room_name = f"field_state_{match_id}"
+        
+        update_data = {
+            "match_id": match_id,
+            "field_state": field_state,
+            "scores": scores,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        socketio.emit('field_state_update', update_data, room=room_name)
+        logger.info(f"Broadcasted field state update for match {match_id}")
+        
+    except Exception as e:
+        logger.error(f"Failed to broadcast field state update: {str(e)}")
+
+def broadcast_match_score_update(match_id, red_score, blue_score, red_breakdown=None, blue_breakdown=None):
+    """Broadcast Push Back scoring updates"""
+    try:
+        room_name = f"match_scoring_{match_id}"
+        
+        update_data = {
+            "match_id": match_id,
+            "red_score": red_score,
+            "blue_score": blue_score,
+            "red_breakdown": red_breakdown,
+            "blue_breakdown": blue_breakdown,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        socketio.emit('score_update', update_data, room=room_name)
+        logger.info(f"Broadcasted score update for match {match_id}: Red {red_score} - Blue {blue_score}")
+        
+    except Exception as e:
+        logger.error(f"Failed to broadcast score update: {str(e)}")
+
+def broadcast_strategy_recommendation(user_id, robot_specs, recommended_archetype, confidence, reasoning):
+    """Broadcast strategy archetype recommendation"""
+    try:
+        room_name = f"strategy_recommendation_{user_id}"
+        
+        update_data = {
+            "user_id": user_id,
+            "robot_specs": robot_specs,
+            "recommended_archetype": recommended_archetype,
+            "confidence": confidence,
+            "reasoning": reasoning,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        socketio.emit('strategy_recommendation', update_data, room=room_name)
+        logger.info(f"Broadcasted strategy recommendation for user {user_id}: {recommended_archetype}")
+        
+    except Exception as e:
+        logger.error(f"Failed to broadcast strategy recommendation: {str(e)}")
+
+def broadcast_push_back_system_alert(alert_type, title, message, severity="info"):
+    """Broadcast Push Back system alerts"""
+    try:
+        alert_data = {
+            "alert_type": alert_type,  # "analysis_complete", "optimization_ready", "system_update"
+            "title": title,
+            "message": message,
+            "severity": severity,  # "info", "warning", "error", "success"
+            "push_back_specific": True,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        socketio.emit('push_back_alert', alert_data)
+        logger.info(f"Broadcasted Push Back alert: {title}")
+        
+    except Exception as e:
+        logger.error(f"Failed to broadcast Push Back alert: {str(e)}")
+
+def broadcast_archetype_analysis_complete(analysis_id, results):
+    """Broadcast when archetype analysis is complete"""
+    try:
+        room_name = f"push_back_analysis_{analysis_id}"
+        
+        update_data = {
+            "analysis_id": analysis_id,
+            "event_type": "archetype_analysis_complete",
+            "results": results,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        socketio.emit('archetype_analysis_complete', update_data, room=room_name)
+        logger.info(f"Broadcasted archetype analysis completion for {analysis_id}")
+        
+    except Exception as e:
+        logger.error(f"Failed to broadcast archetype analysis completion: {str(e)}")
+
+@socketio.event
+def request_push_back_status():
+    """Handle requests for Push Back system status"""
+    try:
+        # This could call the Push Back system status endpoint
+        status_data = {
+            "backend_status": "online",
+            "analysis_engine_status": "available", 
+            "active_analyses": len([room for room in room_subscriptions if "push_back_analysis" in room]),
+            "active_simulations": len([room for room in room_subscriptions if "monte_carlo" in room]),
+            "push_back_version": "1.0.0",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        emit('push_back_status', status_data)
+        
+    except Exception as e:
+        logger.error(f"Failed to get Push Back status: {str(e)}")
+        emit('error', {"message": "Failed to get Push Back status", "error": str(e)})

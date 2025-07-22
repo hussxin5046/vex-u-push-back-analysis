@@ -19,9 +19,9 @@ from io import BytesIO
 
 # Import analysis modules
 from core.simulator import ScoringSimulator, AllianceStrategy, Zone, ParkingLocation
-from analysis.strategy_analyzer import AdvancedStrategyAnalyzer
-from analysis.statistical_analyzer import StatisticalAnalyzer
-from analysis.scoring_analyzer import AdvancedScoringAnalyzer
+from ..analysis.strategy_analyzer import AdvancedStrategyAnalyzer
+from ..analysis.statistical_analyzer import StatisticalAnalyzer
+from ..analysis.scoring_analyzer import AdvancedScoringAnalyzer
 from core.scenario_generator import ScenarioGenerator
 
 

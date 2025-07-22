@@ -92,12 +92,23 @@ def create_app(config_name=None):
     def index():
         """API information endpoint"""
         return {
-            "name": "VEX U Scoring Analysis API",
-            "version": "1.0.0",
-            "description": "REST API for VEX U strategic analysis and ML predictions",
+            "name": "VEX U Push Back Strategy API",
+            "version": "1.0.0-pushback",
+            "description": "REST API for Push Back strategic analysis and decision support",
+            "focus": "VEX U Push Back game-specific strategy optimization",
+            "features": [
+                "Block flow optimization",
+                "Autonomous strategy analysis", 
+                "Goal priority recommendations",
+                "Parking decision timing",
+                "Offense/defense balance",
+                "Monte Carlo simulation",
+                "Strategy archetype matching"
+            ],
             "documentation": f"{app.config['API_PREFIX']}/docs",
             "health": "/health",
-            "websocket": "/socket.io"
+            "websocket": "/socket.io",
+            "push_back_endpoints": f"{app.config['API_PREFIX']}/push-back"
         }
     
     return app

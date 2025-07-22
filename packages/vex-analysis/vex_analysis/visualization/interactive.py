@@ -12,8 +12,8 @@ from dash import dcc, html, Input, Output, callback
 import json
 
 from core.simulator import AllianceStrategy, ScoringSimulator, Zone, ParkingLocation
-from analysis.strategy_analyzer import AdvancedStrategyAnalyzer
-from analysis.scoring_analyzer import AdvancedScoringAnalyzer
+from ..analysis.strategy_analyzer import AdvancedStrategyAnalyzer
+from ..analysis.scoring_analyzer import AdvancedScoringAnalyzer
 from core.scenario_generator import ScenarioGenerator
 
 

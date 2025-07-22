@@ -7,10 +7,19 @@ from dataclasses import dataclass
 from enum import Enum
 import math
 
-from core.simulator import (
-    AllianceStrategy, ScoringSimulator, Zone, ParkingLocation, GameConstants
-)
-from core.scenario_generator import ScenarioGenerator, SkillLevel
+try:
+    from ..core.simulator import (
+        AllianceStrategy, PushBackScoringEngine, ScoringSimulator, Zone, ParkingLocation, 
+        PushBackConstants, GameConstants, BlockColor, PushBackBlock, LongGoal, CenterGoal
+    )
+    from ..core.scenario_generator import ScenarioGenerator, SkillLevel
+except ImportError:
+    # Fallback for when running from main.py
+    from core.simulator import (
+        AllianceStrategy, PushBackScoringEngine, ScoringSimulator, Zone, ParkingLocation,
+        PushBackConstants, GameConstants, BlockColor, PushBackBlock, LongGoal, CenterGoal
+    )
+    from core.scenario_generator import ScenarioGenerator, SkillLevel
 
 
 class GamePhase(Enum):
@@ -73,10 +82,22 @@ class EfficiencyMetrics:
 
 
 class AdvancedScoringAnalyzer:
-    def __init__(self, simulator: ScoringSimulator):
-        self.simulator = simulator
-        self.generator = ScenarioGenerator(simulator)
-        self.constants = GameConstants()
+    def __init__(self, scoring_engine: PushBackScoringEngine = None):
+        # Use Push Back engine by default, fall back to legacy if provided
+        if scoring_engine is None:
+            self.engine = PushBackScoringEngine()
+        elif isinstance(scoring_engine, PushBackScoringEngine):
+            self.engine = scoring_engine
+        else:
+            # Legacy ScoringSimulator provided - wrap it
+            self.engine = PushBackScoringEngine()
+            print("Warning: Using Push Back engine instead of legacy simulator")
+        
+        self.generator = ScenarioGenerator(self.engine)
+        self.constants = PushBackConstants()
+        
+        # Legacy compatibility
+        self.simulator = self.engine
         
         # Time phases (in seconds from match start)
         self.phase_boundaries = {
@@ -211,11 +232,11 @@ class AdvancedScoringAnalyzer:
             if opponent_strategy == "aggressive":
                 interference_risk += 0.3
             
-            # Calculate overall priority score
+            # Calculate Push Back priority score with goal control emphasis
             priority_score = (
-                blocks_per_minute * 0.4 +
-                zone_control_value * 0.3 +
-                (1 - interference_risk) * 20 * 0.3
+                blocks_per_minute * 0.3 +
+                zone_control_value * 0.5 +  # Higher weight for goal control in Push Back
+                (1 - interference_risk) * 20 * 0.2
             )
             
             # Recommended timing
@@ -253,15 +274,20 @@ class AdvancedScoringAnalyzer:
         red_score, blue_score = current_scores
         score_difference = red_score - blue_score
         
-        # Estimate opponent's remaining scoring potential
+        # Estimate opponent's remaining scoring potential in Push Back
         opponent_rate = expected_scoring_rate * 0.8  # Assume slightly lower rate
-        opponent_potential = int(opponent_rate * time_remaining * 3)  # Convert to points
+        opponent_potential = int(opponent_rate * time_remaining * self.constants.POINTS_PER_BLOCK)
         
-        # Account for endgame points
+        # Account for Push Back endgame points
         endgame_bonus = 0
         if time_remaining <= 30:
-            endgame_bonus = 40  # Potential parking points
-            opponent_potential += 40  # Opponent can also park
+            # Opponent potential: blocks + goal control + parking
+            endgame_bonus = self.constants.TWO_ROBOT_PARKING  # Max parking
+            opponent_potential += (
+                self.constants.TWO_ROBOT_PARKING +  # Parking
+                self.constants.LONG_GOAL_CONTROL * 2 +  # Potential goal control
+                self.constants.CENTER_UPPER_CONTROL + self.constants.CENTER_LOWER_CONTROL
+            )
         
         # Calculate blocks needed to win
         target_score = blue_score + opponent_potential + 1  # Beat opponent's potential + 1
@@ -400,12 +426,14 @@ class AdvancedScoringAnalyzer:
         total_blocks = sum(strategy.blocks_scored_auto.values()) + sum(strategy.blocks_scored_driver.values())
         total_time = 120  # Match time in seconds
         
-        # Points per second
-        total_score, _ = self.simulator.calculate_score(
-            {**strategy.blocks_scored_auto, **strategy.blocks_scored_driver},
-            strategy.zones_controlled,
+        # Points per second using Push Back engine
+        total_goal_blocks = {**strategy.blocks_scored_auto, **strategy.blocks_scored_driver}
+        total_score, _ = self.engine.calculate_push_back_score(
+            BlockColor.RED,
+            total_goal_blocks,
             strategy.robots_parked,
-            True  # Assume auto win for calculation
+            True,  # Assume auto win for calculation
+            self.engine.check_autonomous_win_eligibility(strategy)
         )
         
         points_per_second = total_score / total_time
@@ -678,8 +706,8 @@ class AdvancedScoringAnalyzer:
 
 
 if __name__ == "__main__":
-    from core.simulator import ScoringSimulator
-    from analysis.strategy_analyzer import AdvancedStrategyAnalyzer
+    from ..core.simulator import ScoringSimulator
+    from ..analysis.strategy_analyzer import AdvancedStrategyAnalyzer
     
     # Initialize
     simulator = ScoringSimulator()

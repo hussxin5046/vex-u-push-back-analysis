@@ -20,9 +20,14 @@ try:
     from ..core.scenario_generator import ScenarioGenerator, SkillLevel, StrategyType, RobotRole
 except ImportError:
     # Fallback for when running from main.py
-    from src.ml_models.feature_engineering import VEXUFeatureExtractor, GameState, RobotState, MatchPhase
-    from src.core.simulator import AllianceStrategy, ScoringSimulator, Zone, ParkingLocation
-    from src.core.scenario_generator import ScenarioGenerator, SkillLevel, StrategyType, RobotRole
+    try:
+        from vex_analysis.ml_models.feature_engineering import VEXUFeatureExtractor, GameState, RobotState, MatchPhase
+        from vex_analysis.core.simulator import AllianceStrategy, ScoringSimulator, Zone, ParkingLocation
+        from vex_analysis.core.scenario_generator import ScenarioGenerator, SkillLevel, StrategyType, RobotRole
+    except ImportError:
+        from ml_models.feature_engineering import VEXUFeatureExtractor, GameState, RobotState, MatchPhase
+        from core.simulator import AllianceStrategy, ScoringSimulator, Zone, ParkingLocation
+        from core.scenario_generator import ScenarioGenerator, SkillLevel, StrategyType, RobotRole
 
 warnings.filterwarnings('ignore', category=FutureWarning)
 
@@ -284,19 +289,24 @@ class VEXUStrategyPredictor:
         print("Training VEX U Strategy Predictor...")
         start_time = datetime.now()
         
-        # Encode labels
-        y_strategy_encoded = self.label_encoder.fit_transform(y['strategy'])
-        y_strategy_categorical = keras.utils.to_categorical(y_strategy_encoded)
+        # Encode labels - fit on all possible strategy types to ensure consistent encoding
+        self.label_encoder.fit(self.strategy_types)
+        y_strategy_encoded = self.label_encoder.transform(y['strategy'])
+        y_strategy_categorical = keras.utils.to_categorical(y_strategy_encoded, num_classes=len(self.strategy_types))
         
-        # Encode robot roles
+        # Encode robot roles - fit on all possible roles to ensure consistent encoding
         role_encoder1 = LabelEncoder()
         role_encoder2 = LabelEncoder()
         
-        y_robot1_encoded = role_encoder1.fit_transform(y['robot1_role'])
-        y_robot2_encoded = role_encoder2.fit_transform(y['robot2_role'])
+        all_roles = [role.value for role in RobotRole]
+        role_encoder1.fit(all_roles)
+        role_encoder2.fit(all_roles)
         
-        y_robot1_categorical = keras.utils.to_categorical(y_robot1_encoded)
-        y_robot2_categorical = keras.utils.to_categorical(y_robot2_encoded)
+        y_robot1_encoded = role_encoder1.transform(y['robot1_role'])
+        y_robot2_encoded = role_encoder2.transform(y['robot2_role'])
+        
+        y_robot1_categorical = keras.utils.to_categorical(y_robot1_encoded, num_classes=len(RobotRole))
+        y_robot2_categorical = keras.utils.to_categorical(y_robot2_encoded, num_classes=len(RobotRole))
         
         # Scale features
         X_scaled = self.scaler.fit_transform(X)
@@ -328,7 +338,7 @@ class VEXUStrategyPredictor:
         # Build model
         self.model = self._build_neural_network(
             X_train.shape[1], 
-            len(np.unique(y['strategy']))  # Use actual number of unique strategies
+            len(self.strategy_types)  # Use predefined number of strategy types
         )
         
         # Compile model with multiple losses
@@ -344,7 +354,11 @@ class VEXUStrategyPredictor:
                 'robot1_role': 0.5,
                 'robot2_role': 0.5
             },
-            metrics=['accuracy']
+            metrics={
+                'strategy': ['accuracy'],
+                'robot1_role': ['accuracy'],
+                'robot2_role': ['accuracy']
+            }
         )
         
         # Callbacks

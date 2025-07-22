@@ -20,17 +20,12 @@ import {
 import {
   Menu as MenuIcon,
   Dashboard as DashboardIcon,
-  Psychology as AnalysisIcon,
-  SmartToy as RobotIcon,
-  Timeline as StrategyIcon,
-  Assessment as ReportsIcon,
-  Upload as UploadIcon,
-  Settings as SettingsIcon,
+  Build as BuildIcon,
+  Analytics as AnalyticsIcon,
+  Tune as TuneIcon,
   Brightness4 as DarkModeIcon,
   Brightness7 as LightModeIcon,
-  Science as MLIcon,
-  PlayArrow as SimulationIcon,
-  BarChart as VisualizationIcon,
+  SportsEsports as GameIcon,
 } from '@mui/icons-material';
 import { useTheme } from '../contexts/ThemeContext';
 import { useHealthCheck } from '../hooks/useApi';
@@ -38,94 +33,31 @@ import { NavigationItem } from '../types';
 
 const drawerWidth = 280;
 
+// Push Back focused navigation items
 const navigationItems: NavigationItem[] = [
   {
     id: 'dashboard',
-    label: 'Dashboard',
+    label: 'Push Back Dashboard',
     path: '/',
     icon: 'dashboard',
   },
   {
+    id: 'strategy-builder',
+    label: 'Strategy Builder',
+    path: '/strategy-builder',
+    icon: 'build',
+  },
+  {
     id: 'analysis',
-    label: 'Analysis',
+    label: 'Quick Analysis',
     path: '/analysis',
-    icon: 'analysis',
-    children: [
-      {
-        id: 'scoring',
-        label: 'Scoring Analysis',
-        path: '/analysis/scoring',
-        icon: 'analysis',
-      },
-      {
-        id: 'statistical',
-        label: 'Statistical Analysis',
-        path: '/analysis/statistical',
-        icon: 'analysis',
-      },
-      {
-        id: 'strategy',
-        label: 'Strategy Analysis',
-        path: '/analysis/strategy',
-        icon: 'strategy',
-      },
-    ],
+    icon: 'analytics',
   },
   {
-    id: 'simulation',
-    label: 'Simulation',
-    path: '/simulation',
-    icon: 'simulation',
-  },
-  {
-    id: 'ml',
-    label: 'ML Models',
-    path: '/ml',
-    icon: 'ml',
-    children: [
-      {
-        id: 'ml-train',
-        label: 'Train Models',
-        path: '/ml/train',
-        icon: 'ml',
-      },
-      {
-        id: 'ml-predict',
-        label: 'Predictions',
-        path: '/ml/predict',
-        icon: 'ml',
-      },
-      {
-        id: 'ml-optimize',
-        label: 'Optimization',
-        path: '/ml/optimize',
-        icon: 'ml',
-      },
-    ],
-  },
-  {
-    id: 'visualization',
-    label: 'Visualization',
-    path: '/visualization',
-    icon: 'visualization',
-  },
-  {
-    id: 'reports',
-    label: 'Reports',
-    path: '/reports',
-    icon: 'reports',
-  },
-  {
-    id: 'data',
-    label: 'Data Management',
-    path: '/data',
-    icon: 'upload',
-  },
-  {
-    id: 'settings',
-    label: 'Settings',
-    path: '/settings',
-    icon: 'settings',
+    id: 'decision-tools',
+    label: 'Decision Tools',
+    path: '/decision-tools',
+    icon: 'tune',
   },
 ];
 
@@ -133,24 +65,14 @@ const getIcon = (iconName: string) => {
   switch (iconName) {
     case 'dashboard':
       return <DashboardIcon />;
-    case 'analysis':
-      return <AnalysisIcon />;
-    case 'robot':
-      return <RobotIcon />;
-    case 'strategy':
-      return <StrategyIcon />;
-    case 'reports':
-      return <ReportsIcon />;
-    case 'upload':
-      return <UploadIcon />;
-    case 'settings':
-      return <SettingsIcon />;
-    case 'ml':
-      return <MLIcon />;
-    case 'simulation':
-      return <SimulationIcon />;
-    case 'visualization':
-      return <VisualizationIcon />;
+    case 'build':
+      return <BuildIcon />;
+    case 'analytics':
+      return <AnalyticsIcon />;
+    case 'tune':
+      return <TuneIcon />;
+    case 'game':
+      return <GameIcon />;
     default:
       return <DashboardIcon />;
   }
@@ -228,10 +150,10 @@ const Navigation: React.FC<NavigationProps> = ({ window }) => {
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ p: 2 }}>
         <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 700 }}>
-          VEX U Analysis
+          VEX U Push Back
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-          Strategic Scoring Platform
+          Strategy Builder
         </Typography>
         <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
           <Chip
@@ -253,7 +175,22 @@ const Navigation: React.FC<NavigationProps> = ({ window }) => {
 
       <Divider />
       
+      {/* Quick Stats */}
       <Box sx={{ p: 2 }}>
+        <Typography variant="body2" color="text.secondary" gutterBottom>
+          Push Back Field
+        </Typography>
+        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mb: 2 }}>
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>88</Typography>
+            <Typography variant="caption" color="text.secondary">Blocks</Typography>
+          </Box>
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>4</Typography>
+            <Typography variant="caption" color="text.secondary">Goals</Typography>
+          </Box>
+        </Box>
+        
         <ListItem disablePadding>
           <ListItemButton
             onClick={toggleTheme}
@@ -297,7 +234,7 @@ const Navigation: React.FC<NavigationProps> = ({ window }) => {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            VEX U Scoring Analysis Platform
+            VEX U Push Back Strategy Platform
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Chip
@@ -324,7 +261,7 @@ const Navigation: React.FC<NavigationProps> = ({ window }) => {
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
+            keepMounted: true,
           }}
           sx={{
             display: { xs: 'block', md: 'none' },

@@ -19,9 +19,15 @@ from sklearn.linear_model import LinearRegression
 import warnings
 warnings.filterwarnings('ignore')
 
-from core.simulator import ScoringSimulator, AllianceStrategy, Zone, ParkingLocation
-from analysis.strategy_analyzer import AdvancedStrategyAnalyzer
-from core.scenario_generator import ScenarioGenerator, SkillLevel, StrategyType
+try:
+    from ..core.simulator import ScoringSimulator, AllianceStrategy, Zone, ParkingLocation
+    from ..analysis.strategy_analyzer import AdvancedStrategyAnalyzer
+    from ..core.scenario_generator import ScenarioGenerator, SkillLevel, StrategyType
+except ImportError:
+    # Fallback for when running from main.py
+    from core.simulator import ScoringSimulator, AllianceStrategy, Zone, ParkingLocation
+    from analysis.strategy_analyzer import AdvancedStrategyAnalyzer
+    from core.scenario_generator import ScenarioGenerator, SkillLevel, StrategyType
 
 
 @dataclass
@@ -954,7 +960,7 @@ class StatisticalAnalyzer:
 
 
 if __name__ == "__main__":
-    from analysis.strategy_analyzer import AdvancedStrategyAnalyzer
+    from ..analysis.strategy_analyzer import AdvancedStrategyAnalyzer
     
     print("🎯 VEX U Statistical Analysis Demo")
     print("=" * 50)

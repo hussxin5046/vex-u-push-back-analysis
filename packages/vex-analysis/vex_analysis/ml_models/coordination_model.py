@@ -20,9 +20,9 @@ try:
     from ..core.scenario_generator import ScenarioGenerator, SkillLevel, StrategyType, RobotRole
 except ImportError:
     # Fallback for when running from main.py
-    from src.ml_models.feature_engineering import VEXUFeatureExtractor, GameState, RobotState, MatchPhase, RobotSize
-    from src.core.simulator import AllianceStrategy, ScoringSimulator, Zone, ParkingLocation
-    from src.core.scenario_generator import ScenarioGenerator, SkillLevel, StrategyType, RobotRole
+    from ml_models.feature_engineering import VEXUFeatureExtractor, GameState, RobotState, MatchPhase, RobotSize
+    from core.simulator import AllianceStrategy, ScoringSimulator, Zone, ParkingLocation
+    from core.scenario_generator import ScenarioGenerator, SkillLevel, StrategyType, RobotRole
 
 warnings.filterwarnings('ignore', category=FutureWarning)
 

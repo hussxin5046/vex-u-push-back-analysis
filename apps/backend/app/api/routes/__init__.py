@@ -1,7 +1,7 @@
 """
-API Routes package
+API Routes package - Push Back Focused
 
-This package contains all the API route definitions organized by functionality.
+This package contains Push Back specific API route definitions.
 """
 
 from flask import Blueprint
@@ -9,20 +9,11 @@ from flask import Blueprint
 # Create the main API blueprint
 api_bp = Blueprint('api', __name__)
 
-# Import route modules to register them with the blueprint
-from . import analysis
-from . import visualization
-from . import reports
-from . import strategies
-from . import scenarios
-from . import ml_models
+# Import Push Back specific route module
+from . import push_back
+# Keep system routes for basic functionality
 from . import system
 
-# Register all route modules
-api_bp.register_blueprint(analysis.analysis_bp, url_prefix='/analysis')
-api_bp.register_blueprint(visualization.visualization_bp, url_prefix='/visualizations')
-api_bp.register_blueprint(reports.reports_bp, url_prefix='/reports')
-api_bp.register_blueprint(strategies.strategies_bp, url_prefix='/strategies')
-api_bp.register_blueprint(scenarios.scenarios_bp, url_prefix='/scenarios')
-api_bp.register_blueprint(ml_models.ml_bp, url_prefix='/ml')
+# Register Push Back focused routes
+api_bp.register_blueprint(push_back.push_back_bp, url_prefix='/push-back')
 api_bp.register_blueprint(system.system_bp, url_prefix='/system')

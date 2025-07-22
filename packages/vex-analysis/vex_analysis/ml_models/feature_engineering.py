@@ -10,7 +10,7 @@ try:
     from ..core.simulator import Zone, ParkingLocation, AllianceStrategy, MatchResult, GameConstants
 except ImportError:
     # Fallback for when running from main.py
-    from src.core.simulator import Zone, ParkingLocation, AllianceStrategy, MatchResult, GameConstants
+    from core.simulator import Zone, ParkingLocation, AllianceStrategy, MatchResult, GameConstants
 
 
 class RobotSize(Enum):

@@ -24,7 +24,7 @@ class Config:
     ALLOWED_EXTENSIONS = set(os.environ.get('ALLOWED_EXTENSIONS', 'json,csv,xlsx,txt').split(','))
     
     # VEX Analysis Configuration
-    VEX_ANALYSIS_PATH = os.environ.get('VEX_ANALYSIS_PATH', '../../packages/vex-analysis')
+    VEX_ANALYSIS_PATH = os.environ.get('VEX_ANALYSIS_PATH', str(Path(__file__).parent.parent.parent.parent / 'packages' / 'vex-analysis'))
     PYTHON_PATH = os.environ.get('PYTHON_PATH', 'python3')
     
     # WebSocket Configuration

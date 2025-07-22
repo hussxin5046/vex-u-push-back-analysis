@@ -11,7 +11,6 @@ import {
   FormControlLabel,
   Checkbox,
   Slider,
-  TextField,
   LinearProgress,
   Chip,
   Alert,
@@ -22,7 +21,8 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Grid,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
 import {
   PlayArrow as PlayIcon,
@@ -30,6 +30,9 @@ import {
   Download as DownloadIcon,
   Assessment as ChartIcon,
   Psychology as StrategyIcon,
+  Help as HelpIcon,
+  Close as CloseIcon,
+  Info as InfoIcon,
 } from '@mui/icons-material';
 import { useNotification } from '../contexts/NotificationContext';
 import { AllianceStrategy, AnalysisResult, ChartData } from '../types';
@@ -58,8 +61,8 @@ const StrategyAnalysis: React.FC = () => {
     simulationCount: 1000,
     complexityLevel: 'intermediate',
     timeConstraints: {
-      autonomous: 15,
-      driver: 105,
+      autonomous: 30,  // VEX U autonomous is 30 seconds
+      driver: 90,      // VEX U driver control is 90 seconds
     },
     focusMetrics: ['win_probability', 'average_score'],
   });
@@ -67,24 +70,85 @@ const StrategyAnalysis: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState<AnalysisProgress | null>(null);
   const [results, setResults] = useState<AnalysisResult | null>(null);
+  const [showGuide, setShowGuide] = useState(true);
   const { showNotification } = useNotification();
 
   const availableStrategies = [
-    { id: 'offensive_rush', name: 'Offensive Rush', description: 'High-speed scoring strategy' },
-    { id: 'defensive_control', name: 'Defensive Control', description: 'Territory control and blocking' },
-    { id: 'balanced_approach', name: 'Balanced Approach', description: 'Mixed offense and defense' },
-    { id: 'autonomous_focus', name: 'Autonomous Focus', description: 'Maximize autonomous points' },
-    { id: 'endgame_specialist', name: 'Endgame Specialist', description: 'Focus on endgame scoring' },
-    { id: 'support_coordination', name: 'Support Coordination', description: 'Alliance coordination strategy' },
+    { 
+      id: 'offensive_rush', 
+      name: 'Offensive Rush', 
+      description: 'Focus on scoring maximum blocks quickly. Best for teams with fast scoring mechanisms.',
+      scoringPotential: 'High (150-200+ points)',
+      riskLevel: 'Medium'
+    },
+    { 
+      id: 'defensive_control', 
+      name: 'Defensive Control', 
+      description: 'Control zones and block opponent scoring. Ideal against high-scoring opponents.',
+      scoringPotential: 'Medium (100-150 points)',
+      riskLevel: 'Low'
+    },
+    { 
+      id: 'balanced_approach', 
+      name: 'Balanced Approach', 
+      description: 'Mix of scoring and zone control. Adaptable to various opponent strategies.',
+      scoringPotential: 'Medium-High (120-180 points)',
+      riskLevel: 'Low'
+    },
+    { 
+      id: 'autonomous_focus', 
+      name: 'Autonomous Focus', 
+      description: 'Maximize autonomous period scoring for early lead. Requires precise programming.',
+      scoringPotential: 'High in Auto (40-60 points)',
+      riskLevel: 'High'
+    },
+    { 
+      id: 'endgame_specialist', 
+      name: 'Platform Parking Focus', 
+      description: 'Prioritize platform parking (30 points for 2 robots). Critical in close matches.',
+      scoringPotential: 'Guaranteed 30 points',
+      riskLevel: 'Medium'
+    },
+    { 
+      id: 'support_coordination', 
+      name: 'Alliance Coordination', 
+      description: 'One robot scores, one controls zones. Requires excellent teamwork.',
+      scoringPotential: 'Very High (180-220+ points)',
+      riskLevel: 'Medium'
+    },
   ];
 
   const focusMetrics = [
-    { id: 'win_probability', name: 'Win Probability' },
-    { id: 'average_score', name: 'Average Score' },
-    { id: 'score_consistency', name: 'Score Consistency' },
-    { id: 'autonomous_efficiency', name: 'Autonomous Efficiency' },
-    { id: 'driver_efficiency', name: 'Driver Efficiency' },
-    { id: 'risk_assessment', name: 'Risk Assessment' },
+    { 
+      id: 'win_probability', 
+      name: 'Win Probability',
+      description: 'Calculates the likelihood of winning against average opponents'
+    },
+    { 
+      id: 'average_score', 
+      name: 'Average Score',
+      description: 'Expected total points including blocks, zones, and parking'
+    },
+    { 
+      id: 'score_consistency', 
+      name: 'Score Consistency',
+      description: 'How reliable the strategy is across different match conditions'
+    },
+    { 
+      id: 'autonomous_efficiency', 
+      name: 'Autonomous Efficiency',
+      description: 'Performance during the 30-second autonomous period'
+    },
+    { 
+      id: 'driver_efficiency', 
+      name: 'Driver Control Efficiency',
+      description: 'Performance during the 90-second driver control period'
+    },
+    { 
+      id: 'risk_assessment', 
+      name: 'Risk Assessment',
+      description: 'Vulnerability to opponent interference and execution errors'
+    },
   ];
 
   const handleStrategyChange = (strategyId: string, checked: boolean) => {
@@ -225,12 +289,84 @@ const StrategyAnalysis: React.FC = () => {
 
   return (
     <Box>
-      <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 700 }}>
-        Strategy Analysis
-      </Typography>
-      <Typography variant="body1" color="text.secondary" paragraph>
-        Analyze and compare different VEX U strategies through comprehensive simulations.
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Box>
+          <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 700 }}>
+            VEX U Scoring Analysis
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Analyze and optimize scoring strategies for VEX U Push Back competitions
+          </Typography>
+        </Box>
+        <Button
+          startIcon={<HelpIcon />}
+          onClick={() => setShowGuide(true)}
+          variant="outlined"
+          sx={{ height: 'fit-content' }}
+        >
+          Show Guide
+        </Button>
+      </Box>
+
+      {/* User Guide Dialog */}
+      {showGuide && (
+        <Card sx={{ 
+          mb: 3, 
+          backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(33, 150, 243, 0.08)' : '#f0f7ff',
+          border: (theme) => `1px solid ${theme.palette.primary.main}`
+        }}>
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                <InfoIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                VEX U Push Back Scoring Guide
+              </Typography>
+              <IconButton onClick={() => setShowGuide(false)} size="small">
+                <CloseIcon />
+              </IconButton>
+            </Box>
+            
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 3 }}>
+              <Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                  🎯 How Scoring Works
+                </Typography>
+                <Typography variant="body2" paragraph>
+                  • <strong>Blocks:</strong> 3 points each (88 total blocks)<br/>
+                  • <strong>Zone Control:</strong> 6-10 points per goal<br/>
+                  • <strong>Parking:</strong> 8 points (1 robot) or 30 points (2 robots)<br/>
+                  • <strong>Autonomous Win:</strong> 10 point bonus<br/>
+                  • <strong>Match Time:</strong> 30s auto + 90s driver control
+                </Typography>
+              </Box>
+              
+              <Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                  📊 Analysis Parameters
+                </Typography>
+                <Typography variant="body2" paragraph>
+                  • <strong>Strategies:</strong> Select multiple to compare<br/>
+                  • <strong>Simulations:</strong> More = higher accuracy<br/>
+                  • <strong>Focus Metrics:</strong> What to optimize for<br/>
+                  • Results show win rates, scores, and recommendations
+                </Typography>
+              </Box>
+              
+              <Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                  💡 Strategy Tips
+                </Typography>
+                <Typography variant="body2">
+                  • Platform parking is worth 10 blocks of scoring<br/>
+                  • Zone control prevents opponent scoring<br/>
+                  • Autonomous performance sets match tempo<br/>
+                  • Balance risk vs. reward based on opponent
+                </Typography>
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
+      )}
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 2fr' }, gap: 3 }}>
         {/* Configuration Panel */}
@@ -244,26 +380,67 @@ const StrategyAnalysis: React.FC = () => {
 
               {/* Strategy Selection */}
               <FormControl component="fieldset" sx={{ mt: 2, width: '100%' }}>
-                <FormLabel component="legend">Select Strategies</FormLabel>
+                <FormLabel component="legend">
+                  Select Strategies to Analyze
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    Choose multiple strategies to compare their effectiveness
+                  </Typography>
+                </FormLabel>
                 <FormGroup>
                   {availableStrategies.map((strategy) => (
-                    <FormControlLabel
+                    <Paper
                       key={strategy.id}
-                      control={
-                        <Checkbox
-                          checked={parameters.strategies.includes(strategy.id)}
-                          onChange={(e) => handleStrategyChange(strategy.id, e.target.checked)}
-                        />
-                      }
-                      label={
-                        <Box>
-                          <Typography variant="body2">{strategy.name}</Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {strategy.description}
-                          </Typography>
-                        </Box>
-                      }
-                    />
+                      variant="outlined"
+                      sx={{ 
+                        p: 1.5, 
+                        mb: 1,
+                        backgroundColor: (theme) => parameters.strategies.includes(strategy.id) 
+                          ? theme.palette.mode === 'dark' ? 'rgba(33, 150, 243, 0.15)' : '#e3f2fd'
+                          : 'transparent',
+                        border: (theme) => parameters.strategies.includes(strategy.id) 
+                          ? `2px solid ${theme.palette.primary.main}` 
+                          : `1px solid ${theme.palette.divider}`,
+                        cursor: 'pointer',
+                        '&:hover': { 
+                          backgroundColor: (theme) => theme.palette.action.hover 
+                        }
+                      }}
+                      onClick={() => handleStrategyChange(strategy.id, !parameters.strategies.includes(strategy.id))}
+                    >
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={parameters.strategies.includes(strategy.id)}
+                            onChange={(e) => handleStrategyChange(strategy.id, e.target.checked)}
+                          />
+                        }
+                        label={
+                          <Box sx={{ width: '100%' }}>
+                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                              {strategy.name}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary" display="block">
+                              {strategy.description}
+                            </Typography>
+                            <Box sx={{ mt: 0.5, display: 'flex', gap: 1 }}>
+                              <Chip 
+                                label={strategy.scoringPotential} 
+                                size="small" 
+                                color="primary" 
+                                variant="outlined"
+                              />
+                              <Chip 
+                                label={`Risk: ${strategy.riskLevel}`} 
+                                size="small" 
+                                color={strategy.riskLevel === 'Low' ? 'success' : strategy.riskLevel === 'Medium' ? 'warning' : 'error'}
+                                variant="outlined"
+                              />
+                            </Box>
+                          </Box>
+                        }
+                        sx={{ width: '100%', m: 0 }}
+                      />
+                    </Paper>
                   ))}
                 </FormGroup>
               </FormControl>
@@ -271,7 +448,14 @@ const StrategyAnalysis: React.FC = () => {
               {/* Simulation Count */}
               <Box sx={{ mt: 3 }}>
                 <Typography gutterBottom>
-                  Simulation Count: {parameters.simulationCount}
+                  Simulation Count: <strong>{parameters.simulationCount.toLocaleString()}</strong>
+                  <Tooltip title="More simulations provide more accurate results but take longer to compute">
+                    <InfoIcon sx={{ fontSize: 16, ml: 0.5, verticalAlign: 'middle', color: 'text.secondary' }} />
+                  </Tooltip>
+                </Typography>
+                <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
+                  {parameters.simulationCount < 1000 ? 'Quick analysis' : 
+                   parameters.simulationCount < 5000 ? 'Standard analysis' : 'Deep analysis'}
                 </Typography>
                 <Slider
                   value={parameters.simulationCount}
@@ -280,10 +464,10 @@ const StrategyAnalysis: React.FC = () => {
                   max={10000}
                   step={100}
                   marks={[
-                    { value: 100, label: '100' },
-                    { value: 1000, label: '1K' },
-                    { value: 5000, label: '5K' },
-                    { value: 10000, label: '10K' },
+                    { value: 100, label: 'Quick' },
+                    { value: 1000, label: 'Standard' },
+                    { value: 5000, label: 'Thorough' },
+                    { value: 10000, label: 'Deep' },
                   ]}
                   disabled={isRunning}
                 />
@@ -291,19 +475,30 @@ const StrategyAnalysis: React.FC = () => {
 
               {/* Focus Metrics */}
               <FormControl component="fieldset" sx={{ mt: 3, width: '100%' }}>
-                <FormLabel component="legend">Focus Metrics</FormLabel>
+                <FormLabel component="legend">
+                  Analysis Focus Metrics
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    Select which metrics to prioritize in the analysis
+                  </Typography>
+                </FormLabel>
                 <FormGroup>
                   {focusMetrics.map((metric) => (
-                    <FormControlLabel
-                      key={metric.id}
-                      control={
-                        <Checkbox
-                          checked={parameters.focusMetrics.includes(metric.id)}
-                          onChange={(e) => handleMetricChange(metric.id, e.target.checked)}
-                        />
-                      }
-                      label={metric.name}
-                    />
+                    <Tooltip key={metric.id} title={metric.description} placement="right">
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={parameters.focusMetrics.includes(metric.id)}
+                            onChange={(e) => handleMetricChange(metric.id, e.target.checked)}
+                          />
+                        }
+                        label={
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <Typography variant="body2">{metric.name}</Typography>
+                            <InfoIcon sx={{ fontSize: 14, ml: 0.5, color: 'text.secondary' }} />
+                          </Box>
+                        }
+                      />
+                    </Tooltip>
                   ))}
                 </FormGroup>
               </FormControl>
@@ -452,11 +647,30 @@ const StrategyAnalysis: React.FC = () => {
               <CardContent sx={{ textAlign: 'center', py: 8 }}>
                 <StrategyIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
                 <Typography variant="h6" color="text.secondary" gutterBottom>
-                  No Analysis Results Yet
+                  Ready to Analyze VEX U Strategies
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Configure your analysis parameters and start a strategy analysis to see results here.
+                <Typography variant="body2" color="text.secondary" paragraph>
+                  Select strategies from the left panel to begin your analysis.
                 </Typography>
+                <Box sx={{ 
+                  mt: 3, 
+                  p: 2, 
+                  backgroundColor: (theme) => theme.palette.mode === 'dark' 
+                    ? theme.palette.background.paper 
+                    : theme.palette.grey[100], 
+                  borderRadius: 1,
+                  border: (theme) => `1px solid ${theme.palette.divider}`
+                }}>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Quick Start:
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" align="left">
+                    1. Choose 2-3 strategies to compare<br/>
+                    2. Set simulation count (1000 is good for start)<br/>
+                    3. Select metrics you care about<br/>
+                    4. Click "Start Analysis" to begin
+                  </Typography>
+                </Box>
               </CardContent>
             </Card>
           )}

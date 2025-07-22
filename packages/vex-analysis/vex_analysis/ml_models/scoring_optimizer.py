@@ -23,9 +23,9 @@ try:
     from ..core.scenario_generator import ScenarioGenerator, SkillLevel, StrategyType
 except ImportError:
     # Fallback for when running from main.py
-    from src.ml_models.feature_engineering import VEXUFeatureExtractor, GameState, create_game_state_from_strategy
-    from src.core.simulator import AllianceStrategy, ScoringSimulator, Zone, ParkingLocation
-    from src.core.scenario_generator import ScenarioGenerator, SkillLevel, StrategyType
+    from ml_models.feature_engineering import VEXUFeatureExtractor, GameState, create_game_state_from_strategy
+    from core.simulator import AllianceStrategy, ScoringSimulator, Zone, ParkingLocation
+    from core.scenario_generator import ScenarioGenerator, SkillLevel, StrategyType
 
 warnings.filterwarnings('ignore', category=FutureWarning)
 

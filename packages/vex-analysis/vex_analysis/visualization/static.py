@@ -5,7 +5,7 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 from typing import List, Dict, Any
-from analysis.strategy_analyzer import StrategyMetrics, MatchupResult
+from ..analysis.strategy_analyzer import StrategyMetrics, MatchupResult
 
 class StrategyVisualizer:
     def __init__(self):
@@ -378,7 +378,7 @@ class StrategyVisualizer:
 
 
 if __name__ == "__main__":
-    from analysis.strategy_analyzer import AdvancedStrategyAnalyzer
+    from ..analysis.strategy_analyzer import AdvancedStrategyAnalyzer
     from core.simulator import ScoringSimulator
     
     print("Creating sample visualizations...")

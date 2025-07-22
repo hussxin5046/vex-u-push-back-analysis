@@ -17,7 +17,7 @@ trap cleanup SIGINT
 echo "🐍 Starting Flask backend server..."
 cd apps/backend
 source venv/bin/activate
-python app.py &
+python3 app.py &
 BACKEND_PID=$!
 echo "✅ Backend started (PID: $BACKEND_PID) - http://localhost:8000"
 cd ../..

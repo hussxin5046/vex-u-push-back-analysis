@@ -36,7 +36,7 @@ try:
     )
 except ImportError:
     # Fallback for when running from main.py
-    from src.core.simulator import (
+    from core.simulator import (
         AllianceStrategy, ScoringSimulator, Zone, ParkingLocation, GameConstants
     )
 

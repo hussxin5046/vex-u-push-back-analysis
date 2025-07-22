@@ -22,17 +22,17 @@ try:
     ML_MODELS_AVAILABLE = True
 except ImportError:
     # Fallback for when running from main.py
-    from src.core.simulator import (
+    from core.simulator import (
         AllianceStrategy, ScoringSimulator, MatchResult, Zone, ParkingLocation
     )
-    from src.core.scenario_generator import ScenarioGenerator, SkillLevel, RobotRole, StrategyType
+    from core.scenario_generator import ScenarioGenerator, SkillLevel, RobotRole, StrategyType
     
     # ML Models integration
     try:
-        from src.ml_models.strategy_predictor import VEXUStrategyPredictor, StrategyPrediction
-        from src.ml_models.scoring_optimizer import VEXUScoringOptimizer, ScoreOptimizationResult
-        from src.ml_models.coordination_model import VEXUCoordinationModel, CoordinationPlan
-        from src.ml_models.feature_engineering import VEXUFeatureExtractor, create_game_state_from_strategy
+        from ml_models.strategy_predictor import VEXUStrategyPredictor, StrategyPrediction
+        from ml_models.scoring_optimizer import VEXUScoringOptimizer, ScoreOptimizationResult
+        from ml_models.coordination_model import VEXUCoordinationModel, CoordinationPlan
+        from ml_models.feature_engineering import VEXUFeatureExtractor, create_game_state_from_strategy
         ML_MODELS_AVAILABLE = True
     except ImportError as e:
         print(f"Warning: ML models not available - {e}")
@@ -919,7 +919,7 @@ class AdvancedStrategyAnalyzer:
 
 
 if __name__ == "__main__":
-    from core.simulator import ScoringSimulator
+    from ..core.simulator import ScoringSimulator
     
     # Initialize analyzer
     simulator = ScoringSimulator()

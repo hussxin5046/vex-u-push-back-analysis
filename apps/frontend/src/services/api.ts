@@ -128,7 +128,10 @@ class ApiService {
   async trainMLModel(modelType: string, params?: any): Promise<any> {
     const response = await this.client.post<ApiResponse<any>>(
       '/api/ml/train',
-      { modelType, params }
+      { 
+        model_type: modelType,
+        ...params 
+      }
     );
     return this.handleResponse(response);
   }

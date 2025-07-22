@@ -16,11 +16,11 @@ import uuid
 logger = logging.getLogger(__name__)
 
 class VEXAnalysisService:
-    """Service for executing VEX U analysis operations"""
+    """Service for executing Push Back VEX U analysis operations"""
     
     def __init__(self, vex_path: str, python_path: str = "python3"):
         """
-        Initialize the VEX analysis service
+        Initialize the VEX analysis service for Push Back
         
         Args:
             vex_path: Path to the VEX U analysis directory
@@ -28,11 +28,16 @@ class VEXAnalysisService:
         """
         self.vex_path = Path(vex_path).resolve()
         self.python_path = python_path
-        self.main_script = self.vex_path / "main.py"
+        self.main_script = self.vex_path / "vex_analysis" / "main.py"
         
-        # Validate that the VEX analysis system exists
-        if not self.main_script.exists():
-            raise FileNotFoundError(f"VEX analysis main.py not found at {self.main_script}")
+        # Validate that the Push Back analysis system exists
+        push_back_analyzer = self.vex_path / "vex_analysis" / "analysis" / "push_back_strategy_analyzer.py"
+        push_back_engine = self.vex_path / "vex_analysis" / "core" / "simulator.py"
+        
+        if not push_back_analyzer.exists():
+            logger.warning(f"Push Back strategy analyzer not found at {push_back_analyzer}")
+        if not push_back_engine.exists():
+            logger.warning(f"Push Back scoring engine not found at {push_back_engine}")
         
         # Add VEX path to Python path for imports
         if str(self.vex_path) not in sys.path:
@@ -93,7 +98,7 @@ class VEXAnalysisService:
         Returns:
             Analysis results
         """
-        command = ["main.py", "demo", "--strategies", str(strategy_count)]
+        command = ["vex_analysis/main.py", "demo", "--strategies", str(strategy_count)]
         result = self._execute_command(command)
         
         if result["success"]:
@@ -117,7 +122,7 @@ class VEXAnalysisService:
             Analysis results
         """
         command = [
-            "main.py", "analyze", 
+            "vex_analysis/main.py", "analyze", 
             "--strategies", str(strategy_count),
             "--simulations", str(simulation_count),
             "--complexity", complexity
@@ -144,7 +149,7 @@ class VEXAnalysisService:
             Statistical analysis results
         """
         command = [
-            "main.py", "statistical",
+            "vex_analysis/main.py", "statistical",
             "--sample-size", str(sample_size),
             "--method", method
         ]
@@ -175,7 +180,7 @@ class VEXAnalysisService:
             data_file = f.name
         
         try:
-            command = ["main.py", "visualize", "--data", data_file]
+            command = ["vex_analysis/main.py", "visualize", "--data", data_file]
             if chart_types:
                 command.extend(["--charts"] + chart_types)
             
@@ -211,7 +216,7 @@ class VEXAnalysisService:
         
         try:
             command = [
-                "main.py", "report",
+                "vex_analysis/main.py", "report",
                 "--data", data_file,
                 "--type", report_type,
                 "--format", output_format
@@ -240,7 +245,7 @@ class VEXAnalysisService:
         Returns:
             Training results
         """
-        command = ["main.py", "ml-train", "--model", model_type]
+        command = ["vex_analysis/main.py", "ml-train", "--model", model_type]
         
         if training_params:
             # Create temporary file for training parameters
@@ -288,7 +293,7 @@ class VEXAnalysisService:
         
         try:
             command = [
-                "main.py", "ml-predict",
+                "vex_analysis/main.py", "ml-predict",
                 "--model", model_type,
                 "--data", data_file
             ]
@@ -322,7 +327,7 @@ class VEXAnalysisService:
             strategy_file = f.name
         
         try:
-            command = ["main.py", "ml-optimize", "--strategy", strategy_file]
+            command = ["vex_analysis/main.py", "ml-optimize", "--strategy", strategy_file]
             
             if optimization_params:
                 with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
@@ -368,7 +373,7 @@ class VEXAnalysisService:
             params_file = f.name
         
         try:
-            command = ["main.py", "scenario-evolution", "--params", params_file]
+            command = ["vex_analysis/main.py", "scenario-evolution", "--params", params_file]
             
             result = self._execute_command(command, timeout=900)  # 15 minute timeout
             
@@ -497,3 +502,195 @@ class VEXAnalysisService:
                 "created_at": datetime.utcnow().isoformat(),
                 "raw_output": output
             }
+    
+    # Push Back Specific Methods
+    def run_push_back_analysis(self, robot_specs: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        Run comprehensive Push Back strategy analysis
+        
+        Args:
+            robot_specs: List of robot specifications
+            
+        Returns:
+            Push Back analysis results
+        """
+        # Create temporary file for robot specs
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+            json.dump(robot_specs, f)
+            specs_file = f.name
+        
+        try:
+            command = [
+                "-c",
+                f"""
+import sys
+import json
+sys.path.append('{self.vex_path}')
+from vex_analysis.analysis.push_back_strategy_analyzer import PushBackStrategyAnalyzer
+
+# Load robot specs
+with open('{specs_file}', 'r') as f:
+    robot_specs = json.load(f)
+
+analyzer = PushBackStrategyAnalyzer()
+analysis = analyzer.run_comprehensive_analysis(robot_specs)
+
+# Output results as JSON
+print(json.dumps({{
+    "analysis_id": "pb_" + str(hash(str(robot_specs))),
+    "analysis_type": "push_back_comprehensive",
+    "robot_specs": robot_specs,
+    "block_flow_optimization": analysis.block_flow_optimization.to_dict() if hasattr(analysis, 'block_flow_optimization') else {{}},
+    "autonomous_decision": analysis.autonomous_decision.to_dict() if hasattr(analysis, 'autonomous_decision') else {{}},
+    "goal_priority_analysis": analysis.goal_priority_analysis.to_dict() if hasattr(analysis, 'goal_priority_analysis') else {{}},
+    "parking_decision_analysis": analysis.parking_decision_analysis.to_dict() if hasattr(analysis, 'parking_decision_analysis') else {{}},
+    "offense_defense_balance": analysis.offense_defense_balance.to_dict() if hasattr(analysis, 'offense_defense_balance') else {{}},
+    "recommended_archetype": analysis.recommended_archetype,
+    "recommendations": analysis.recommendations,
+    "created_at": "{datetime.utcnow().isoformat()}"
+}}))
+"""
+            ]
+            
+            result = self._execute_command(command, timeout=300)
+            
+            if result["success"]:
+                return self._parse_analysis_output(result["stdout"], "push_back_comprehensive")
+            else:
+                raise RuntimeError(f"Push Back analysis failed: {result['stderr']}")
+        finally:
+            # Clean up temporary file
+            os.unlink(specs_file)
+    
+    def calculate_push_back_score(self, field_state: Dict[str, Any], alliance: str = "red") -> Dict[str, Any]:
+        """
+        Calculate Push Back score for given field state
+        
+        Args:
+            field_state: Current field state
+            alliance: Alliance to calculate score for
+            
+        Returns:
+            Scoring results
+        """
+        # Create temporary file for field state
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+            json.dump(field_state, f)
+            state_file = f.name
+        
+        try:
+            command = [
+                "-c",
+                f"""
+import sys
+import json
+sys.path.append('{self.vex_path}')
+from vex_analysis.core.simulator import PushBackScoringEngine
+
+# Load field state
+with open('{state_file}', 'r') as f:
+    field_state = json.load(f)
+
+engine = PushBackScoringEngine()
+score, breakdown = engine.calculate_push_back_score(field_state, "{alliance}")
+
+print(json.dumps({{
+    "score": score,
+    "breakdown": breakdown,
+    "alliance": "{alliance}",
+    "field_state": field_state
+}}))
+"""
+            ]
+            
+            result = self._execute_command(command)
+            
+            if result["success"]:
+                return json.loads(result["stdout"].strip().split('\n')[-1])
+            else:
+                raise RuntimeError(f"Push Back scoring failed: {result['stderr']}")
+        finally:
+            # Clean up temporary file
+            os.unlink(state_file)
+    
+    def run_push_back_monte_carlo(self, strategy: Dict[str, Any], num_simulations: int = 1000) -> Dict[str, Any]:
+        """
+        Run Monte Carlo simulation for Push Back strategy
+        
+        Args:
+            strategy: Strategy to simulate
+            num_simulations: Number of simulations to run
+            
+        Returns:
+            Simulation results
+        """
+        # Create temporary file for strategy
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+            json.dump(strategy, f)
+            strategy_file = f.name
+        
+        try:
+            command = [
+                "-c",
+                f"""
+import sys
+import json
+sys.path.append('{self.vex_path}')
+from vex_analysis.analysis.push_back_strategy_analyzer import PushBackStrategyAnalyzer
+
+# Load strategy
+with open('{strategy_file}', 'r') as f:
+    strategy = json.load(f)
+
+analyzer = PushBackStrategyAnalyzer()
+simulation = analyzer.run_monte_carlo_simulation(strategy, {num_simulations})
+
+print(json.dumps({{
+    "win_rate": simulation.win_rate,
+    "avg_score": simulation.avg_score,
+    "score_std": simulation.score_std,
+    "scoring_breakdown": simulation.scoring_breakdown,
+    "opponent_matchups": simulation.opponent_matchups,
+    "performance_confidence": simulation.performance_confidence,
+    "num_simulations": {num_simulations}
+}}))
+"""
+            ]
+            
+            result = self._execute_command(command, timeout=600)
+            
+            if result["success"]:
+                return json.loads(result["stdout"].strip().split('\n')[-1])
+            else:
+                raise RuntimeError(f"Push Back Monte Carlo simulation failed: {result['stderr']}")
+        finally:
+            # Clean up temporary file
+            os.unlink(strategy_file)
+    
+    def get_push_back_archetypes(self) -> Dict[str, Any]:
+        """
+        Get available Push Back strategy archetypes
+        
+        Returns:
+            Available archetypes
+        """
+        command = [
+            "-c",
+            f"""
+import sys
+sys.path.append('{self.vex_path}')
+from vex_analysis.analysis.push_back_strategy_analyzer import PushBackStrategyAnalyzer
+
+analyzer = PushBackStrategyAnalyzer()
+archetypes = analyzer.get_strategy_archetypes()
+
+print(json.dumps(archetypes))
+"""
+        ]
+        
+        result = self._execute_command(command)
+        
+        if result["success"]:
+            return json.loads(result["stdout"].strip().split('\n')[-1])
+        else:
+            raise RuntimeError(f"Failed to get Push Back archetypes: {result['stderr']}")
