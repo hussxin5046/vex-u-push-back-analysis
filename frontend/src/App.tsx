@@ -11,6 +11,10 @@ import { NotificationProvider } from './contexts/NotificationContext';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Analysis from './pages/Analysis';
+import StrategyAnalysis from './pages/StrategyAnalysis';
+import ScenarioGenerator from './pages/ScenarioGenerator';
+import Visualizations from './pages/Visualizations';
+import Reports from './pages/Reports';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -27,31 +31,10 @@ const queryClient = new QueryClient({
 });
 
 // Placeholder components for other routes
-const SimulationPage = () => (
-  <div>
-    <h1>Simulation</h1>
-    <p>Simulation tools and scenario generation coming soon!</p>
-  </div>
-);
-
 const MLPage = () => (
   <div>
     <h1>ML Models</h1>
     <p>Machine learning model management coming soon!</p>
-  </div>
-);
-
-const VisualizationPage = () => (
-  <div>
-    <h1>Visualization</h1>
-    <p>Interactive charts and dashboards coming soon!</p>
-  </div>
-);
-
-const ReportsPage = () => (
-  <div>
-    <h1>Reports</h1>
-    <p>Report generation and management coming soon!</p>
   </div>
 );
 
@@ -88,14 +71,14 @@ function App() {
                 <Route path="/analysis" element={<Analysis />} />
                 <Route path="/analysis/scoring" element={<Analysis />} />
                 <Route path="/analysis/statistical" element={<Analysis />} />
-                <Route path="/analysis/strategy" element={<Analysis />} />
-                <Route path="/simulation" element={<SimulationPage />} />
+                <Route path="/analysis/strategy" element={<StrategyAnalysis />} />
+                <Route path="/simulation" element={<ScenarioGenerator />} />
                 <Route path="/ml" element={<MLPage />} />
                 <Route path="/ml/train" element={<MLPage />} />
                 <Route path="/ml/predict" element={<MLPage />} />
                 <Route path="/ml/optimize" element={<MLPage />} />
-                <Route path="/visualization" element={<VisualizationPage />} />
-                <Route path="/reports" element={<ReportsPage />} />
+                <Route path="/visualization" element={<Visualizations />} />
+                <Route path="/reports" element={<Reports />} />
                 <Route path="/data" element={<DataPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="*" element={<NotFoundPage />} />
