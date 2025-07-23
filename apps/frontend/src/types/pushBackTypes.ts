@@ -8,13 +8,17 @@ export interface ApiResponse<T = any> {
 }
 
 export interface RobotSpecs {
-  id: string;
-  speed: number; // 0.0 - 1.0
-  accuracy: number; // 0.0 - 1.0
-  capacity: number; // Number of blocks robot can hold
-  autonomous_capability?: number;
+  id?: string;
+  cycle_time: number; // Seconds per scoring cycle
+  pickup_reliability: number; // 0.0 - 1.0
+  scoring_reliability: number; // 0.0 - 1.0
+  autonomous_reliability: number; // 0.0 - 1.0
+  max_capacity: number; // Number of blocks robot can hold
+  parking_capability: boolean;
+  speed?: number; // 0.0 - 1.0 (legacy)
+  accuracy?: number; // 0.0 - 1.0 (legacy)
   driver_skill?: number;
-  reliability?: number;
+  reliability?: number; // Overall reliability (legacy)
 }
 
 export interface PushBackBlock {
@@ -69,14 +73,21 @@ export interface PushBackFieldState {
 export interface PushBackStrategy {
   id: string;
   name: string;
-  archetype: string;
+  description?: string;
+  strategy_type?: string;
+  archetype?: string;
   robot_specs: RobotSpecs[];
+  goal_priorities?: {
+    center: number;
+    long: number;
+  };
   autonomous_strategy: string;
-  driver_strategy: string;
+  parking_strategy: string;
+  driver_strategy?: string;
   endgame_strategy?: string;
   priority_sequence?: string[];
-  created_at?: string;
-  updated_at?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface PushBackMatchState {
